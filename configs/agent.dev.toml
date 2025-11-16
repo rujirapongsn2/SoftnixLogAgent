@@ -3,14 +3,30 @@ channel_size = 2048
 
 [[inputs]]
 type = "stdin"
-name = "stdin"
+name = "sn-agent-stdin"
 
 [[inputs]]
 type = "file_tail"
 path = "/var/log/system.log"
-name = "system-log"
+name = "sn-agent-system-log"
 read_from_beginning = false
 poll_interval_ms = 250
+
+[[inputs]]
+type = "udp_listener"
+bind = "0.0.0.0:9001"
+name = "softnix-agent-udp-ingest"
+
+[[inputs]]
+type = "tcp_listener"
+bind = "127.0.0.1:9000"
+name = "sn-agent-tcp"
+
+[[inputs]]
+type = "process"
+program = "/bin/bash"
+args = ["-c", "/usr/bin/whoami"]
+name = "sn-agent-proc"
 
 [output]
 type = "stdout"

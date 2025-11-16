@@ -75,6 +75,20 @@
   2. Run agent.
 - **Expected:** Events `process 1`, `process 2` tagged with `proc:stdout`; process exits cleanly.
 
+## 6.1 Process Runner Health Check (Linux)
+- **Scenario:** Ensure simple Linux process (e.g., `ls`) can be invoked and monitored.
+- **Steps:**
+  1. Configure:
+     ```toml
+     [[inputs]]
+     type = "process"
+     program = "/bin/bash"
+     args = ["-c", "ls /tmp && echo done"]
+     name = "proc-check"
+     ```
+  2. Run agent once; process finishes immediately.
+- **Expected:** Agent emits one or more lines from `ls /tmp`, followed by `done`; source tag `proc-check:stdout`; no lingering child processes.
+
 ## 7. Journald Input (Linux)
 - **Scenario:** Follow systemd logs.
 - **Steps:**
@@ -112,6 +126,15 @@
 - **Scenario:** Ensure level/app/timestamp parsing and IoC extraction.
 - **Steps:** run `cargo test pipeline::tests`.
 - **Expected:** All tests pass; metadata fields populated as asserted.
+
+## 10.1 Normalized Record Inspection
+- **Scenario:** Verify structured fields (hostname/app/pid/key-values) produced by the parser.
+- **Steps:**
+  1. Run the targeted unit test `cargo test pipeline::tests::normalizes_syslog_structure`.
+  2. Optional manual check:
+     - Run `cargo run -- --config configs/agent.dev.toml --debug-events`.
+     - Type `Oct 12 10:00:00 host01 nginx[123]: GET /foo status=200 latency=10ms`.
+- **Expected:** Unit test passes; debug output shows `hostname=host01`, `app_name=nginx`, `pid=123`, and key-values `status=200`, `latency=10ms`.
 
 ## 11. UDP Listener Unit Test
 - **Scenario:** Regression for UDP module.

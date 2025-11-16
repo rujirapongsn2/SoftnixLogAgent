@@ -18,6 +18,10 @@ struct Cli {
     /// Validate configuration file without starting the agent
     #[arg(long)]
     check: bool,
+
+    /// Enable debug output of normalized events
+    #[arg(long)]
+    debug_events: bool,
 }
 
 #[tokio::main]
@@ -31,7 +35,7 @@ async fn main() -> Result<()> {
     }
 
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
-    let run_future = run_agent(config, ShutdownSignal::new(shutdown_rx));
+    let run_future = run_agent(config, ShutdownSignal::new(shutdown_rx), cli.debug_events);
     pin!(run_future);
 
     tokio::select! {

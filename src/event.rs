@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone)]
@@ -7,6 +9,7 @@ pub struct LogEvent {
     pub ingested_at: DateTime<Utc>,
     pub indicators: Vec<IocMatch>,
     pub metadata: ParsedMetadata,
+    pub normalized: NormalizedRecord,
 }
 
 impl LogEvent {
@@ -17,6 +20,7 @@ impl LogEvent {
             ingested_at: Utc::now(),
             indicators: Vec::new(),
             metadata: ParsedMetadata::default(),
+            normalized: NormalizedRecord::default(),
         }
     }
 }
@@ -45,4 +49,15 @@ pub struct ParsedMetadata {
     pub level: Option<String>,
     pub app_name: Option<String>,
     pub observed_ts: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct NormalizedRecord {
+    pub message: String,
+    pub hostname: Option<String>,
+    pub app_name: Option<String>,
+    pub pid: Option<String>,
+    pub severity: Option<String>,
+    pub timestamp: Option<DateTime<Utc>>,
+    pub key_values: BTreeMap<String, String>,
 }

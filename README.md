@@ -5,6 +5,7 @@ Rust-based agent prototype that ingests logs from multiple sources, normalizes t
 ## Prerequisites
 - Rust toolchain (1.91+). Install via `curl https://sh.rustup.rs -sSf | sh -s -- -y` if needed.
 - macOS or Linux with access to target log files (for file-tail input).
+- For Windows cross-builds: install `mingw-w64` toolchain (`brew install mingw-w64` on macOS, `sudo apt install mingw-w64` on Linux) so `x86_64-w64-mingw32-gcc` and `x86_64-w64-mingw32-dlltool` are available.
 
 ## Build & Run
 ```bash
@@ -15,9 +16,62 @@ cargo build
 # run the agent (defaults to configs/agent.dev.toml)
 cargo run -- --config configs/agent.dev.toml
 
+# enable normalized event debug logging (requires RUST_LOG for debug output)
+RUST_LOG=softnix_agent=debug cargo run -- --config configs/agent.dev.toml --debug-events
+
 # validate configuration only
 cargo run -- --config configs/agent.syslog.toml --check
+
+# cross-compile binaries (Windows build requires mingw-w64 toolchain)
+scripts/build.sh linux
+scripts/build.sh windows
 ```
+
+### Sample Config (`configs/agent.dev.toml`)
+```toml
+[runtime]
+channel_size = 2048
+
+[[inputs]]
+type = "stdin"
+name = "stdin"
+
+[[inputs]]
+type = "file_tail"
+path = "./tmp.log"
+read_from_beginning = true
+poll_interval_ms = 250
+name = "tmp-log"
+
+[[inputs]]
+type = "tcp_listener"
+bind = "127.0.0.1:9000"
+name = "tcp-ingest"
+
+[[inputs]]
+type = "udp_listener"
+bind = "127.0.0.1:9001"
+name = "udp-ingest"
+
+[[inputs]]
+type = "process"
+program = "bash"
+args = ["-c", "tail -F /var/log/system.log"]
+name = "tail-system"
+
+[output]
+type = "stdout"
+```
+
+### Installing & Running Windows Binary
+1. Build on macOS/Linux using `scripts/build.sh windows` (requires mingw-w64). The executable will be at `target/x86_64-pc-windows-gnu/release/softnix_agent.exe`.
+2. Copy `softnix_agent.exe` plus your `configs/` directory to the Windows host (e.g., via SCP/USB).
+3. Install the Microsoft Visual C++ runtime if not already present.
+4. Open PowerShell on Windows and run:
+   ```powershell
+   .\softnix_agent.exe --config .\configs\agent.dev.toml
+   ```
+5. Use `--check` to validate configs or `--debug-events` for normalized logs as on Unix.
 The sample config enables both stdin and a file-tail input. Tail paths may need adjustment for your OS (e.g., `/var/log/system.log` on macOS or `/var/log/syslog` on Linux).
 
 ### Configuring Syslog Output

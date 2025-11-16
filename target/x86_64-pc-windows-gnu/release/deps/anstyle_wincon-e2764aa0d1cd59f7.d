@@ -1,0 +1,10 @@
+/Users/rujirapongair/myapp/SoftnixAgent/target/x86_64-pc-windows-gnu/release/deps/anstyle_wincon-e2764aa0d1cd59f7.d: /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/lib.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/ansi.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/stream.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/windows.rs
+
+/Users/rujirapongair/myapp/SoftnixAgent/target/x86_64-pc-windows-gnu/release/deps/libanstyle_wincon-e2764aa0d1cd59f7.rlib: /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/lib.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/ansi.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/stream.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/windows.rs
+
+/Users/rujirapongair/myapp/SoftnixAgent/target/x86_64-pc-windows-gnu/release/deps/libanstyle_wincon-e2764aa0d1cd59f7.rmeta: /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/lib.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/ansi.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/stream.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/windows.rs
+
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/lib.rs:
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/ansi.rs:
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/stream.rs:
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/anstyle-wincon-3.0.11/src/windows.rs:

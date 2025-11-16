@@ -1,15 +1,18 @@
-use std::sync::{
-    atomic::{AtomicU64, Ordering},
-    Arc,
+use std::{
+    collections::BTreeMap,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc,
+    },
 };
 
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Datelike, NaiveDateTime, TimeZone, Utc};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use tokio::sync::mpsc;
 
-use crate::event::{IocKind, IocMatch, LogEvent, ParsedMetadata};
+use crate::event::{IocKind, IocMatch, LogEvent, NormalizedRecord, ParsedMetadata};
 
 static IPV4_REGEX: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?P<ip>(?:\d{1,3}\.){3}\d{1,3})").expect("valid IPv4 regex"));
@@ -22,6 +25,15 @@ static APP_REGEX: Lazy<Regex> =
 static RFC3339_REGEX: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))")
         .expect("valid rfc3339 regex")
+});
+static SYSLOG_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"^(?P<ts>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(?P<host>\S+)\s+(?P<app>[A-Za-z0-9_./-]+)(?:\[(?P<pid>\d+)\])?:\s*(?P<msg>.*)$",
+    )
+    .expect("valid syslog regex")
+});
+static KV_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"(?P<key>[A-Za-z0-9_.-]+)=(?P<val>"[^"]*"|\S+)"#).expect("valid kv regex")
 });
 
 pub async fn run_pipeline(
@@ -42,6 +54,7 @@ pub async fn run_pipeline(
 pub fn normalize(event: &mut LogEvent) {
     event.indicators = extract_indicators(&event.line);
     event.metadata = parse_metadata(&event.line);
+    event.normalized = build_normalized(&event.line, &event.metadata);
 }
 
 fn extract_indicators(line: &str) -> Vec<IocMatch> {
@@ -80,6 +93,64 @@ fn parse_metadata(line: &str) -> ParsedMetadata {
     }
 
     meta
+}
+
+fn build_normalized(line: &str, metadata: &ParsedMetadata) -> NormalizedRecord {
+    let mut record = NormalizedRecord::default();
+    if let Some(caps) = SYSLOG_REGEX.captures(line) {
+        record.hostname = caps.name("host").map(|m| m.as_str().to_string());
+        record.app_name = caps.name("app").map(|m| m.as_str().to_string());
+        record.pid = caps.name("pid").map(|m| m.as_str().to_string());
+        record.message = caps
+            .name("msg")
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+        if let Some(ts_match) = caps.name("ts") {
+            if let Some(ts) = parse_syslog_timestamp(ts_match.as_str()) {
+                record.timestamp = Some(ts);
+            }
+        }
+    } else {
+        record.message = line.to_string();
+    }
+
+    if record.app_name.is_none() {
+        record.app_name = metadata.app_name.clone();
+    }
+    if record.timestamp.is_none() {
+        record.timestamp = metadata.observed_ts;
+    }
+    if record.severity.is_none() {
+        record.severity = metadata.level.clone();
+    }
+
+    record.key_values = extract_key_values(&record.message);
+
+    record
+}
+
+fn extract_key_values(message: &str) -> BTreeMap<String, String> {
+    let mut kv = BTreeMap::new();
+    for caps in KV_REGEX.captures_iter(message) {
+        if let Some(key) = caps.name("key") {
+            if let Some(val) = caps.name("val") {
+                let mut value = val.as_str().to_string();
+                if value.starts_with('"') && value.ends_with('"') && value.len() >= 2 {
+                    value = value[1..value.len() - 1].to_string();
+                }
+                kv.insert(key.as_str().to_string(), value);
+            }
+        }
+    }
+    kv
+}
+
+fn parse_syslog_timestamp(fragment: &str) -> Option<DateTime<Utc>> {
+    let year = Utc::now().year();
+    let datetime_str = format!("{} {}", fragment, year);
+    NaiveDateTime::parse_from_str(&datetime_str, "%b %e %H:%M:%S %Y")
+        .ok()
+        .map(|dt| Utc.from_utc_datetime(&dt))
 }
 
 fn is_valid_ipv4(ip: &str) -> bool {
@@ -138,5 +209,27 @@ mod tests {
         normalize(&mut event);
         let ts = event.metadata.observed_ts.expect("timestamp");
         assert_eq!(ts, Utc.with_ymd_and_hms(2024, 2, 1, 1, 2, 3).unwrap());
+    }
+
+    #[test]
+    fn normalizes_syslog_structure() {
+        let mut event = LogEvent::new(
+            "test",
+            "Oct 12 10:00:00 host01 nginx[123]: GET /index.html status=200 latency=10ms",
+        );
+        normalize(&mut event);
+        let record = &event.normalized;
+        assert_eq!(record.hostname.as_deref(), Some("host01"));
+        assert_eq!(record.app_name.as_deref(), Some("nginx"));
+        assert_eq!(record.pid.as_deref(), Some("123"));
+        assert_eq!(
+            record.key_values.get("status").map(|s| s.as_str()),
+            Some("200")
+        );
+        assert_eq!(
+            record.key_values.get("latency").map(|s| s.as_str()),
+            Some("10ms")
+        );
+        assert!(record.timestamp.is_some());
     }
 }

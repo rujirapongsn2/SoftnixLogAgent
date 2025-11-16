@@ -12,7 +12,11 @@ use crate::{
     shutdown::ShutdownSignal,
 };
 
-pub async fn run_agent(config: AgentConfig, shutdown: ShutdownSignal) -> Result<()> {
+pub async fn run_agent(
+    config: AgentConfig,
+    shutdown: ShutdownSignal,
+    debug_events: bool,
+) -> Result<()> {
     let AgentConfig {
         runtime,
         inputs: input_configs,
@@ -53,7 +57,9 @@ pub async fn run_agent(config: AgentConfig, shutdown: ShutdownSignal) -> Result<
     info!(inputs = input_count, "agent started");
 
     let output_task =
-        tokio::spawn(async move { outputs::run_output(output, processed_receiver).await });
+        tokio::spawn(
+            async move { outputs::run_output(output, processed_receiver, debug_events).await },
+        );
 
     let stats_shutdown = shutdown.clone_signal();
     let stats_handle = tokio::spawn(async move { log_health(stats, stats_shutdown).await });
