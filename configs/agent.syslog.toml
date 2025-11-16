@@ -1,0 +1,15 @@
+[runtime]
+channel_size = 2048
+
+[[inputs]]
+type = "stdin"
+name = "stdin"
+
+[output]
+type = "syslog"
+protocol = "udp"
+address = "127.0.0.1:5514"
+format = "rfc3164"
+hostname = "dev-agent"
+app_name = "softnix-agent"
+facility = 1

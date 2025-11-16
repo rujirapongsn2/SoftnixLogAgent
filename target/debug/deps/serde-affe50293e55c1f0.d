@@ -1,0 +1,14 @@
+/Users/rujirapongair/myapp/SoftnixAgent/target/debug/deps/serde-affe50293e55c1f0.d: /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/rujirapongair/myapp/SoftnixAgent/target/debug/build/serde-ffe1212ea6083ba8/out/private.rs
+
+/Users/rujirapongair/myapp/SoftnixAgent/target/debug/deps/libserde-affe50293e55c1f0.rlib: /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/rujirapongair/myapp/SoftnixAgent/target/debug/build/serde-ffe1212ea6083ba8/out/private.rs
+
+/Users/rujirapongair/myapp/SoftnixAgent/target/debug/deps/libserde-affe50293e55c1f0.rmeta: /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/rujirapongair/myapp/SoftnixAgent/target/debug/build/serde-ffe1212ea6083ba8/out/private.rs
+
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/rujirapongair/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/rujirapongair/myapp/SoftnixAgent/target/debug/build/serde-ffe1212ea6083ba8/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/rujirapongair/myapp/SoftnixAgent/target/debug/build/serde-ffe1212ea6083ba8/out

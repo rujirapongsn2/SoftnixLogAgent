@@ -1,0 +1,16 @@
+[runtime]
+channel_size = 2048
+
+[[inputs]]
+type = "stdin"
+name = "stdin"
+
+[[inputs]]
+type = "file_tail"
+path = "/var/log/system.log"
+name = "system-log"
+read_from_beginning = false
+poll_interval_ms = 250
+
+[output]
+type = "stdout"
