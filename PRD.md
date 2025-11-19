@@ -37,6 +37,7 @@ Softnix Log Collector Agent เป็น Agent ที่พัฒนาด้ว
    - File Tail (`/var/log/*.log`)  
    - journald (Linux)  
    - TCP/UDP Listener  
+   - Windows Event Log (เลือก channel ได้ เช่น Application, System, Security หรือ custom)  
    - Stdout/Stderr  
 
 2. **Parser / Normalizer**  
@@ -186,6 +187,11 @@ log_level = "info"
 type = "file_tail"
 paths = ["/var/log/nginx/access.log"]
 
+[inputs.windows_event_log]
+type = "windows_event_log"
+channels = ["Application", "Security"]
+bookmark_persist_path = "C:\\ProgramData\\Softnix\\agent.wevtbookmark"
+
 [outputs.syslog]
 type = "syslog_udp"
 server = "10.10.1.20:514"
@@ -220,5 +226,140 @@ Softnix Log Collector Agent:
    •  เหมาะกับเครื่องหลายสเปก
    •  ส่งออก Syslog มาตรฐาน
 
+11. Web-based GUI Configuration Service
 
+Softnix Log Collector Agent จะมีโมดูลเสริมสำหรับ GUI แบบ Web Interface เพื่อช่วยอำนวยความสะดวกในการจัดการ agent โดยเฉพาะสำหรับผู้ดูแลระบบที่ต้องการตั้งค่าอย่างง่ายและควบคุมตัว agent ได้โดยไม่ต้องเปิดไฟล์ config ด้วยตนเอง
 
+⸻
+
+11.1 Objectives
+	•	ให้ผู้ใช้ปรับแต่ง configuration ผ่านกราฟิกหน้าเว็บได้ง่าย
+	•	ลดความผิดพลาดจากการแก้ไขไฟล์ config ด้วยมือ
+	•	ควบคุม service ของ Agent (start/stop/reload) ได้จาก UI
+	•	ควบคุมสิทธิ์การเข้าถึง และจำกัดให้เข้าผ่าน localhost เป็นค่าเริ่มต้น
+	•	รองรับการใช้งานได้ทั้ง Linux และ Windows
+
+⸻
+
+11.2 Architecture
+
+GUI ประกอบด้วย 2 ส่วนหลัก:
+
+1. Embedded HTTP Admin Server (Rust)
+	•	เป็น Web server ขนาดเล็กที่ฝังใน agent หรือรันคู่กับ agent
+	•	รองรับ REST API สำหรับจัดการ config และ service control
+	•	รันบน 127.0.0.1 (localhost) เป็นค่า default
+	•	ให้เปลี่ยน bind address ได้ (เช่น 0.0.0.0) ผ่าน config โดยผู้ดูแลระบบ
+
+2. Web UI (HTML/JS)
+	•	โหลดจากภายใน agent (embedded) หรือจาก static directory
+	•	แสดงผลเป็นฟอร์มเพื่อแก้ไข config และปุ่มควบคุม agent
+
+⸻
+
+11.3 Default Security Model
+
+เป็นแนวทางความปลอดภัยเบื้องต้น:
+
+ค่า Default
+	•	เปิด GUI ผ่าน:
+http://127.0.0.1:8080
+	•	ไม่อนุญาต remote access โดยค่า default
+	•	แนะนำให้ตั้ง authentication: token หรือ username/password
+
+Config Example:
+[web_admin]
+enabled = true
+bind_address = "127.0.0.1:8080"
+require_auth = true
+auth_token = "change_me"
+
+ผู้ดูแลระบบสามารถเปลี่ยน bind_address ได้ หากต้องการให้เข้าระยะไกล เช่น:
+bind_address = "0.0.0.0:8080"
+
+11.4 GUI Features
+
+11.4.1 Configuration Editor
+	•	อ่านค่า config ปัจจุบันจากไฟล์ เช่น /etc/softnix/agent.toml
+	•	แสดงผลเป็นฟอร์ม (Syslog settings, TI settings, input modules)
+	•	ผู้ใช้แก้ไขได้ และกด “Save”
+	•	เมื่อบันทึกแล้ว GUI จะ:
+	•	เขียนไฟล์ config ใหม่
+	•	เรียก service reload (ผ่าน API หรือ systemctl)
+
+⸻
+
+11.4.2 Service Control Panel
+
+GUI จะมีปุ่มพื้นฐาน:
+	•	Start Agent
+	•	Stop Agent
+	•	Restart Agent
+	•	Reload Configuration
+
+Linux (systemd)
+
+GUI จะเรียกผ่าน backend เช่น:
+systemctl start softnix_agent
+systemctl stop softnix_agent
+systemctl restart softnix_agent
+systemctl reload softnix_agent
+
+โดยการตั้งค่า sudoers เฉพาะเจาะจง เช่น:
+softnixgui ALL=NOPASSWD: /bin/systemctl start softnix_agent
+
+Windows (Service Manager)
+
+GUI จะใช้ WinAPI หรือสั่งผ่าน sc.exe เช่น:
+sc start SoftnixAgent
+sc stop SoftnixAgent
+
+sc start SoftnixAgent
+sc stop SoftnixAgent
+
+11.5 Admin REST API
+
+ตัวอย่าง API endpoints:
+GET    /config/get
+POST   /config/save
+
+POST   /service/start
+POST   /service/stop
+POST   /service/restart
+POST   /service/reload
+
+GET    /health
+GET    /version
+รูปแบบ Payload:
+
+{
+  "status": "ok",
+  "message": "Agent restarted"
+}
+
+11.6 Deployment Options
+
+รัน GUI เป็นส่วนหนึ่งของ Agent
+	•	Agent process มี embedded web admin server
+	•	เรียก /admin/... ผ่าน localhost
+	•	เหมาะกับเครื่องที่มี agent ตัวเดียว
+
+11.7 OS Support
+
+Linux
+	•	ใช้ systemd สำหรับ lifecycle control
+	•	Commands: systemctl start/stop/reload
+	•	GUI สามารถทำงานเป็น root หรือมี sudoers limit
+
+Windows
+	•	ใช้ Windows Service Control Manager
+	•	GUI รันด้วยสิทธิ์ Administrator
+
+11.8 UX Guidelines สำหรับ GUI
+	•	ใช้ layout แบบ Clean (sidebar + main panel)
+	•	แสดงสถานะ agent แบบ real-time เช่น
+	•	running / stopped
+	•	config loaded
+	•	last reload
+	•	มีให้ test connection เช่น “Test Syslog Server”
+	•	มี log panel แสดง error ของ agent แบบ live tail
